@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/BasicWispers.iml" filepath="$PROJECT_DIR$/.idea/BasicWispers.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/IrisAssistant.iml" filepath="$PROJECT_DIR$/.idea/IrisAssistant.iml" />
     </modules>
   </component>
 </project>
