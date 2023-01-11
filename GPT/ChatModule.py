@@ -9,8 +9,8 @@ class ChatHandler:
     def __init__(self):
         openai.api_key = os.getenv('OPENAI_API_KEY')
         config = configparser.ConfigParser()
-        config.read('chat_settings.ini')
-        self.engine = config['GPT']['engine']
+        config.read(r'C:\Users\zombo\PycharmProjects\IrisAssistant\chat_settings.ini')
+        self.engine = config["GPT"]['engine']
         self.max_tokens = config.getint('GPT', 'max_tokens')
         self.n = config.getint('GPT', 'n')
         self.stop = config['GPT']['stop']

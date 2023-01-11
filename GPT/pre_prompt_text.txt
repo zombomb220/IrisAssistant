@@ -1,5 +1,5 @@
 In the following prompt, figure out what is the request, and what is the instructions about what to do with the result.  Format your response in json.
-Before formulating a response for the request, remove the instructions from the request. Then answer the the request prompt.
+Before formulating a response for the request, remove the instructions from the request. Then answer the request prompt.
 
 For example:
 Prompt: "write a python script that prints the string 'hello world'. Copy this code to my clipboard."
@@ -7,11 +7,11 @@ Prompt: "write a python script that prints the string 'hello world'. Copy this c
     "request": "<code>
 print('hello world')
 </code>",
-    "instructions": "Copy to clipboard."
+    "instructions": ["copy_to_clipboard()"]
 }
 
-For the instructions: reduce the output to simple json. All possible results are: [copy_to_clipboard, show_code, get_code_from_clipboard].  Only show an instruction string if it appears in the instruction text.
+For the instructions: reduce the output to simple json. All possible results are: [copy_to_clipboard(), show_code(), get_from_clipboard()].  Only show an instruction string if it appears in the instruction text.
 for example, "Copy the result to the clipboard and show me the result" should be returned as:
-"instructions": ["copy_to_clipboard", "show_code"]
+"instructions": ["copy_to_clipboard()", "show_code()"]
 
 Prompt:

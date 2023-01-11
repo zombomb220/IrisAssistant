@@ -2,14 +2,18 @@ import os
 import platform
 import subprocess
 import tempfile
-from gtts import gTTS
-from playsound import playsound
+import time
+
+import numpy as np
 import pyperclip3
+import scipy.io.wavfile as wf
 import sounddevice as sd
 import soundfile as sf
 import whisper
+from gtts import gTTS
+from playsound import playsound
 from pydub import AudioSegment
-import time
+
 
 class Utilities:
     def __init__(self):
@@ -42,7 +46,7 @@ class Utilities:
         # Save the speech to a file
         speech.save(path)
 
-        playsound(path)
+        playsound(path, 0)
         os.remove(path)
 
     @staticmethod
@@ -102,21 +106,77 @@ class Utilities:
 
     @staticmethod
     def record(duration):
+
         samplerate = 44100  # 44.1 kHz
-        print("Recording audio...")
         # Start recording
         recording = sd.rec(int(samplerate * duration), samplerate=samplerate, channels=2)
         sd.wait()  # Wait until recording is finished
-        print("Audio recording complete.")
 
         # Convert the recording to an MP3 file
         filename = "recording.mp3"
-        sound = AudioSegment(
-            recording.tobytes(),
-            frame_rate=samplerate,
-            sample_width=2,
-            channels=2
-        )
+        # sound = AudioSegment(
+        #     recording.tobytes(),
+        #     frame_rate=samplerate,
+        #     sample_width=2,
+        #     channels=2
+        # )
+        # sound.export(filename, format="mp3")
+        wf.write("recording.wav", samplerate, recording)
+        sound = AudioSegment.from_file("recording.wav", format="wav")
+
+        # Save the audio as an MP3 file
+        sound.export(filename, format="mp3")
+
+        return filename
+
+    @staticmethod
+    def record_threshold(threshold, min_duration):
+        samplerate = 44100  # 44.1 kHz
+        recording = []  # Initialize an empty list to store the recording
+
+        start_time = time.time()  # Get the current time
+        while True:
+            # Start recording for 0.1 seconds
+            data = sd.rec(int(samplerate * 0.1), samplerate=samplerate, channels=2)
+            recording.append(data)  # Append the recorded data to the list
+            sd.wait()  # Wait until recording is finished
+
+            # Calculate the volume of the input audio
+            volume = np.max(np.abs(data))
+
+            # If the volume is above the threshold, continue recording
+            if volume > threshold:
+                continue
+            # If the volume is below the threshold, stop recording and exit the loop
+            else:
+                # Calculate the elapsed time
+                elapsed_time = time.time() - start_time
+                # If the elapsed time is less than the minimum duration, keep recording
+                if elapsed_time < min_duration:
+                    continue
+                # If the elapsed time is greater than or equal to the minimum duration, start recording for an additional second
+                else:
+                    # Start recording for an additional second
+                    data = sd.rec(int(samplerate * 1), samplerate=samplerate, channels=2)
+                    recording.append(data)  # Append the recorded data to the list
+                    sd.wait()  # Wait until recording is finished
+
+                    # Calculate the volume of the input audio
+                    volume = np.max(np.abs(data))
+                    # If the volume is above the threshold, continue recording
+                    if volume > threshold:
+                        continue
+                    # If the volume is below the threshold, stop recording
+                    else:
+                        break
+
+        # Concatenate all the recorded data into a single numpy array
+        recording = np.concatenate(recording)
+
+        # Convert the recording to an MP3 file
+        filename = "recording.mp3"
+        wf.write("recording.wav", samplerate, recording)
+        sound = AudioSegment.from_file("recording.wav", format="wav")
         sound.export(filename, format="mp3")
 
         return filename
@@ -137,8 +197,7 @@ class Utilities:
 
         if os.path.exists(audio_file_path):
             model = whisper.load_model("base")
-            result = model.transcribe(audio_file_path, fp16=False, language='English')
+            result = model.transcribe(audio_file_path, fp16=False, language='English', verbose=1)
             result_text = result["text"]
-            print("Question: " + result_text)
             os.remove(audio_file_path)
             return result_text
