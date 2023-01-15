@@ -1,8 +1,9 @@
-import openai
-import os
 import configparser
 import json
+import os
 from typing import Dict
+
+import openai
 
 
 class ChatHandler:
@@ -19,6 +20,19 @@ class ChatHandler:
         pre_prompt_text_path = config['GPT']['pre_prompt_text_path']
         with open(pre_prompt_text_path, 'r') as file:
             self.prePromptText = file.read()
+
+    def chat_raw(self, prompt):
+        completions = openai.Completion.create(
+            engine=self.engine,
+            prompt=prompt,
+            max_tokens=self.max_tokens,
+            n=self.n,
+            stop=self.stop,
+            temperature=self.temperature
+        )
+
+        message = completions.choices[0].text
+        return message.strip()
 
     def chat(self, prompt) -> Dict:
         completions = openai.Completion.create(
